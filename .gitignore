@@ -1,0 +1,8 @@
+# Ignore any files or directories
+*
+# To make files under subdirectories verifiable
+!*/
+
+!**/*.gitignore
+
+!**/*.age
