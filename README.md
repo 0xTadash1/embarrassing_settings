@@ -1,5 +1,9 @@
 # embarrassing\_settings
 
+## Oneliners
+
+You can get the following all without cloning this repo.
+
 -   Copy the passphrase to clipboard from Bitwarden:
     ```sh
     bw get item 7feb205a-f989-4103-92e7-af4201156bf9 \
@@ -15,3 +19,9 @@
     ```sh
     curl -fsSL 'https://raw.githubusercontent.com/0xTadash1/embarrassing_settings/main/browser_extension/AdGuard_settings.json.age' | age -d > $(mktemp -t AdGuard.XXXXXXXXXX --suffix=.json)
     ```
+
+### Prerequisites
+
+-   curl
+-   bw
+-   age
