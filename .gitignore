@@ -7,3 +7,4 @@
 
 !**/*.age
 !**/Makefile
+!**/README.md
