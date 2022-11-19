@@ -37,3 +37,9 @@ dec_adguard: browser_extension/AdGuard_settings.json.age
 	$(call DECRYPT,$<)
 dec_efyt: browser_extension/EnhancerForYoutube_settings.json.age
 	$(call DECRYPT,$<)
+
+paste_into_efyt:
+	{ [[ "$$(uname -s)" = Linux ]] \
+		&& xclip -sel clip -o \
+		|| pbpaste; \
+	} > browser_extension/EnhancerForYoutube_settings.json
