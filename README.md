@@ -7,8 +7,7 @@ You can get the following all without cloning this repo.
 -   Copy the passphrase to clipboard from Bitwarden:
     ```sh
     bw get item 7feb205a-f989-4103-92e7-af4201156bf9 \
-        | jq '.fields[0].value' \
-        | tr -d '"' | tr -d $$'\n' \
+        | sed -E 's/^.*"Passphrase","value":"|","type":.*$//g' \
         | tee >(xclip -sel clip)
     ```
 -   Copy settings for **EnhancerForYoutube**:

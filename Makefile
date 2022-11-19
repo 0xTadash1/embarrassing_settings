@@ -16,8 +16,7 @@ passphrase:
 	# Ensure that you have done bw {login,sync}.
 	# `"fields": [{ "name": "Passphrase", "value": "...", ... }],`
 	bw get item 7feb205a-f989-4103-92e7-af4201156bf9 \
-		| jq '.fields[0].value' \
-		| tr -d '"' | tr -d $$'\n' \
+		| sed -E 's/^.*"Passphrase","value":"|","type":.*$$//g' \
 		| tee >($(COPY_TO_CLIPBD))
 
 enc_all: passphrase
