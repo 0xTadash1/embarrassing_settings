@@ -20,20 +20,20 @@ passphrase:
 		| tr -d '"' | tr -d $$'\n' \
 		| tee >($(COPY_TO_CLIPBD))
 
-encrypt_all_up_to_date: passphrase
+enc_all: passphrase
 	for json in $$(find -name '*.json'); do \
 		[[ "$${json}.age" -nt "$$json" ]] \
 			|| $(call ENCRYPT,$${json}) \
 	done
 
 # Encrypt with a passphrase; you should already know or stored in bitwarden
-adguard.age: browser_extension/AdGuard_settings.json
+enc_adguard: browser_extension/AdGuard_settings.json
 	$(call ENCRYPT,$<)
-efyt.age: browser_extension/EnhancerForYoutube_settings.json
+enc_efyt: browser_extension/EnhancerForYoutube_settings.json
 	$(call ENCRYPT,$<)
 
 # Decrypt
-adguard: browser_extension/AdGuard_settings.json.age
+dec_adguard: browser_extension/AdGuard_settings.json.age
 	$(call DECRYPT,$<)
-efyt: browser_extension/EnhancerForYoutube_settings.json.age
+dec_efyt: browser_extension/EnhancerForYoutube_settings.json.age
 	$(call DECRYPT,$<)
