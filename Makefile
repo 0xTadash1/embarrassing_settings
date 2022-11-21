@@ -43,6 +43,10 @@ dec_adguard: $(ADGUARD_JSON).age passphrase
 dec_efyt: $(EFYT_JSON).age passphrase
 	@ $(call DECRYPT,$<)
 
+# Useful targets for EFYT
+copy_efyt_to_clipbd:
+	@ cat $(EFYT_JSON) | { $(COPY_TO_CLIPBD) }
+
 paste_into_efyt:
 	@ { [[ "$$(uname -s)" = Linux ]] \
 		&& xclip -sel clip -o \
