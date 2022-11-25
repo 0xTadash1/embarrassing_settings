@@ -19,7 +19,7 @@ endef
 
 passphrase:
 	# Ensure that you have done bw {login,sync}.
-	# `"fields": [{ "name": "Passphrase", "value": "...", ... }],`
+	@ # `"fields": [{ "name": "Passphrase", "value": "...", ... }],`
 	@ bw get item 7feb205a-f989-4103-92e7-af4201156bf9 \
 		| sed -E 's/^.*"Passphrase","value":"|","type":.*$$//g' \
 		| tee >($(COPY_TO_CLIPBD))
