@@ -1,54 +1,81 @@
-ADGUARD_JSON := browser_extension/AdGuard_settings.json
-EFYT_JSON := browser_extension/EnhancerForYoutube_settings.json
+ADG_JSON := settings/adg.json
+EFYT_JSON := settings/efyt.json
 
 
-define COPY_TO_CLIPBD
-	[[ "$$(uname -s)" = Linux ]] \
-		&& xclip -sel clip \
-		|| pbcopy;
+define CLIPBD_COPY_STDIN
+	if type clipcopy > /dev/null 2>&1; then \
+		clipcopy; \
+	elif type xsel > /dev/null 2>&1; then \
+		xsel --clipboard --input; \
+	elif type xclip > /dev/null 2>&1; then \
+		nohup xclip -selection clipboard -in > /dev/null 2>&1 & \
+	elif [ -n "$$WAYLAND_DISPLAY" ]; then \
+		nohup wl-copy > /dev/null 2>&1 & \
+	else \
+		pbcopy; \
+	fi;
+endef
+
+define CLIPBD_PASTE
+	if type clippaste > /dev/null 2>&1; then \
+		clippaste; \
+	elif type xsel > /dev/null 2>&1; then \
+		xsel --clipboard --output; \
+	elif type xclip > /dev/null 2>&1; then \
+		xclip -selection clipboard -out; \
+	elif [ -n "$$WAYLAND_DISPLAY" ]; then \
+		wl-paste; \
+	else \
+		pbpaste; \
+	fi;
 endef
 
 define ENCRYPT
-	age --passphrase $1 > $(1).age;
+	age --passphrase "$(1)" > "$(1).age";
 endef
 
 define DECRYPT
-	_one=$1; age --decrypt $1 > $${_one%.age};
+	{ one="$(1)"; age --decrypt "$(1)" > "$${one%.age}"; };
 endef
 
-
-passphrase:
-	# Ensure that you have done bw {login,sync}.
+PASSPHRASE:
+	@ # Ensure that you have done bw {login,sync}.
 	@ # `"fields": [{ "name": "Passphrase", "value": "...", ... }],`
 	@ bw get item 7feb205a-f989-4103-92e7-af4201156bf9 \
 		| sed -E 's/^.*"Passphrase","value":"|","type":.*$$//g' \
-		| tee >($(COPY_TO_CLIPBD))
+		| tee >($(CLIPBD_COPY_STDIN))
 	@ echo
 
-enc_all: passphrase
+ENCRYPT_ALL: PASSPHRASE
 	@ for json in $$(find -name '*.json'); do \
-		[[ "$${json}.age" -nt "$$json" ]] \
-			|| $(call ENCRYPT,$${json}) \
+		[[ "$${json}.age" -ot "$$json" ]] \
+		&& $(call ENCRYPT,$${json}) \
 	done
 
 # Encrypt with a passphrase; you should already know or stored in bitwarden
-enc_adguard: $(ADGUARD_JSON) passphrase
-	@ $(call ENCRYPT,$<)
-enc_efyt: $(EFYT_JSON) passphrase
-	@ $(call ENCRYPT,$<)
+.PHONY
+$(ADG_JSON).age: PASSPHRASE
+	@ # Ensure that "$(ADG_JSON)" does exist.
+	@ [ -f $(ADG_JSON) ]
+	@ $(call ENCRYPT,$(ADG_JSON))
+$(EFYT_JSON).age: PASSPHRASE
+	@ # Ensure that "$(EFYT_JSON)" does exist.
+	@ [ -f $(EFYT_JSON) ]
+	@ $(call ENCRYPT,$(EFYT_JSON))
 
 # Decrypt
-dec_adguard: $(ADGUARD_JSON).age passphrase
-	@ $(call DECRYPT,$<)
-dec_efyt: $(EFYT_JSON).age passphrase
-	@ $(call DECRYPT,$<)
+$(ADG_JSON): PASSPHRASE
+	@ # Ensure that "$(ADG_JSON).age" does exist.
+	@ [ -f $(ADG_JSON).age ]
+	@ $(call DECRYPT,$(ADG_JSON).age)
+$(EFYT_JSON): PASSPHRASE
+	@ # Ensure that "$(EFYT_JSON).age" does exist.
+	@ [ -f $(EFYT_JSON).age ]
+	@ $(call DECRYPT,$(EFYT_JSON).age)
 
 # Useful targets for EFYT
-copy_efyt_to_clipbd:
-	@ cat $(EFYT_JSON) | { $(COPY_TO_CLIPBD) }
+COPY_CONTENT_EFYT:
+	@ cat $(EFYT_JSON) | $(CLIPBD_COPY_STDIN)
 
-paste_into_efyt:
-	@ { [[ "$$(uname -s)" = Linux ]] \
-		&& xclip -sel clip -o \
-		|| pbpaste; \
-	} > $(EFYT_JSON)
+PASTE_INTO_EFYT:
+	@ ( $(CLIPBD_PASTE) ) > $(EFYT_JSON)
